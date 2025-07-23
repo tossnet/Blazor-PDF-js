@@ -28,13 +28,22 @@ jobs:
         run: |
             echo "Contenu de l’arborescence :"
             tree -L 3
-
+            
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # version stable Node.js
+          
       - name: Installer TypeScript
         run: npm install -g typescript
 
       - name: Compiler les fichiers TypeScript
-        run: tsc --project tsconfig.json
-  
+        run: tsc --project Blazor-PDF-js/tsconfig.json
+
+      - name: Debug - Liste les fichiers
+        run: |
+          echo "Contenu du workspace:"
+          find . -name "tsconfig.json"
+    
       - name: Dotnet Publish
         run: 
             dotnet publish Blazor-PDF-js/Blazor-PDF-js.csproj --configuration Release -f net9.0
@@ -54,7 +63,7 @@ jobs:
         with:
             github_token: ${{ secrets.PUBLISH_TOKEN }}
             publish_branch: gh-pages
-            publish_dir: /${{ env.PUBLISH_FOLDER }}
+            publish_dir: ${{ env.PUBLISH_FOLDER }}
             allow_empty_commit: false
             keep_files: false
             force_orphan: true
