@@ -28,7 +28,12 @@ jobs:
         run: |
             echo "Contenu de l’arborescence :"
             tree -L 3
-      
+      - name: Installer TypeScript
+        run: npm install -g typescript
+
+      - name: Compiler les fichiers TypeScript
+        run: tsc
+  
       - name: Dotnet Publish
         run: 
             dotnet publish Blazor-PDF-js/Blazor-PDF-js.csproj --configuration Release -f net9.0
