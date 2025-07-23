@@ -1,0 +1,23 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+<button class="btn btn-primary mb-1" @onclick="OnClickLoadPdf">Load PDF</button>
+
+<br />
+
+<div id="pdfContainer">
+    <div>
+        <div id="pdfControls" style="text-align:center; margin-bottom: 1rem;">
+            <button id="prevPage">◀</button>
+            <span id="pageInfo">Page: 1 / 1</span>
+            <button id="nextPage">▶</button>
+            <button id="zoomOut">-</button>
+            <button id="zoomIn">+</button>
+        </div>
+
+        <canvas id="pdfCanvas" width="800" height="600"></canvas>
+    </div>
+</div>

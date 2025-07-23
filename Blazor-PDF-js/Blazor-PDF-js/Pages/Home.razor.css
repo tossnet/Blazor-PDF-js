@@ -1,0 +1,43 @@
+﻿#pdfContainer {
+    position: relative;
+    background-color: #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /*center;*/
+    padding: 2rem;
+    min-height: 80vh;
+    overflow: auto;
+    border: 1px solid #aaaaaa17;
+    max-width: 100%;
+}
+
+#pdfControls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #f0f0f0;
+    padding: 8px;
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid #aaa;
+    z-index: 10;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+    #pdfControls > button {
+        border: 1px solid #aaa;
+        border-radius: 3px;
+        min-width: 27px;
+        color: #656565;
+    }
+
+#pdfCanvas {
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease;
+    max-width: 100%; 
+    margin-top: 20px;
+    height: auto; 
+}
