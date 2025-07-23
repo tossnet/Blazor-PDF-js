@@ -33,7 +33,7 @@ jobs:
         run: npm install -g typescript
 
       - name: Compiler les fichiers TypeScript
-        run: tsc --project tsconfig.json
+        run: tsc --project Blazor-PDF-js/tsconfig.json
   
       - name: Dotnet Publish
         run: 
