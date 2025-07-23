@@ -3,6 +3,7 @@ let currentPage = 1;
 let totalPages = 0;
 let zoom = 1.5;
 const canvasId = 'pdfCanvas';
+let currentRenderTask: any = null;
 
 function renderPage(pageNum: number): void {
     const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -15,20 +16,28 @@ function renderPage(pageNum: number): void {
         canvas.width = viewport.width;
         canvas.height = viewport.height;
 
-
-        
-
         const renderContext = {
             canvasContext: context,
             viewport,
         };
 
-        page.render(renderContext);
-
-        const info = document.getElementById('pageInfo');
-        if (info) {
-            info.textContent = `Page ${currentPage} / ${totalPages}`;
+        if (currentRenderTask) {
+            currentRenderTask.cancel();
         }
+
+        currentRenderTask = page.render(renderContext);
+
+        currentRenderTask.promise.then(() => {
+            const info = document.getElementById('pageInfo');
+            if (info) {
+                info.textContent = `Page ${currentPage} / ${totalPages}`;
+            }
+        }).catch((err: any) => {
+            // Ne loggue que si l’erreur n’est pas due à une annulation
+            if (err?.name !== 'RenderingCancelledException') {
+                console.error("Erreur de rendu PDF :", err);
+            }
+        });
     });
 }
 
@@ -49,6 +58,7 @@ function setupControls(): void {
 
     document.getElementById('zoomIn')?.addEventListener('click', () => {
         zoom += 0.25;
+    console.log(`Zoom level: ${zoom}`);
         renderPage(currentPage);
     });
 
