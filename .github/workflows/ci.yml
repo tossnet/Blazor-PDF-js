@@ -22,7 +22,7 @@ jobs:
       
       - uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '9.0.230'
+          dotnet-version: '9.0.203'
 
       - name: Debug - Lister les fichiers importants
         run: |
