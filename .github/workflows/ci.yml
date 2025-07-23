@@ -28,11 +28,12 @@ jobs:
         run: |
             echo "Contenu de l’arborescence :"
             tree -L 3
+
       - name: Installer TypeScript
         run: npm install -g typescript
 
       - name: Compiler les fichiers TypeScript
-        run: tsc
+        run: tsc --project tsconfig.json
   
       - name: Dotnet Publish
         run: 

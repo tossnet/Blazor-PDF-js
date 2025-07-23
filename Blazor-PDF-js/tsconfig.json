@@ -1,20 +1,18 @@
 {
   "compilerOptions": {
-    /* Visit https://aka.ms/tsconfig to read more about this file */
-
-    /* Language and Environment */
     "target": "ESNext",
-
-    /* Modules */
     "module": "ESNext",
-
-    /* Create source map files for emitted JavaScript files. */
     "sourceMap": false,
-
-    /* Type Checking */
     "strict": true,
     "noImplicitAny": true,
     "noEmitOnError": true,
-    "removeComments": true
-  }
+    "removeComments": true,
+
+    "outDir": "./Pages", // ➜ output final dans le même dossier
+    "rootDir": "./Pages", // ➜ source dans Pages aussi
+    "allowJs": false,
+    "esModuleInterop": true
+  },
+  "include": [ "Pages/Home.razor.ts" ],
+  "exclude": [ "node_modules" ]
 }
