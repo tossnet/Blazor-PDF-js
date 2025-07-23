@@ -23,14 +23,15 @@ jobs:
       - uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '9.x'
-   
+
+      - name: Debug - Lister les fichiers importants
+        run: |
+            echo "Contenu de l’arborescence :"
+            tree -L 3
+      
       - name: Dotnet Publish
         run: 
-            dotnet publish  --configuration Release -f net9.0
-      - name: Affiche les fichiers publiés
-        run: |
-            echo "Contenu du dossier de build:"
-            find . -type f
+            dotnet publish Blazor-PDF-js/Blazor-PDF-js/Blazor-PDF-js.csproj --configuration Release -f net9.0
     
       - name: Change base-tag in index.html to repo name
         run: sed -i 's/<base href="\/" \/>/<base href="\/${{ env.REPO_NAME }}\/" \/>/g' $GITHUB_WORKSPACE/$PUBLISH_FOLDER/index.html
