@@ -29,20 +29,6 @@ jobs:
             echo "Contenu de l’arborescence :"
             tree -L 3
             
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'  # version stable Node.js
-
-      - name: Installer TypeScript
-        run: npm install -g typescript
-
-      - name: Compiler les fichiers TypeScript
-        run: tsc --project Blazor-PDF-js/tsconfig.json
-
-      - name: Debug - Liste les fichiers
-        run: |
-          echo "Contenu du workspace:"
-          find . -name "tsconfig.json"
     
       - name: Dotnet Publish
         run: 
