@@ -33,6 +33,9 @@ jobs:
         with:
           node-version: '18'  # version stable Node.js
           
+      - name: Install dependencies
+        run: npm install
+
       - name: Installer TypeScript
         run: npm install -g typescript
 

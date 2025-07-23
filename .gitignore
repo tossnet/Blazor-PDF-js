@@ -420,3 +420,7 @@ FodyWeavers.xsd
 # JavaScript files (only TypeScript)
 *.js
 *.razor.js.map
+**/*.razor.js
+
+# But do not ignore .ts files
+!*.ts
