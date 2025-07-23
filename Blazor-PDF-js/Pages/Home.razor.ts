@@ -25,6 +25,8 @@ function renderPage(pageNum: number): void {
             currentRenderTask.cancel();
         }
 
+        disableControls(false);
+
         currentRenderTask = page.render(renderContext);
 
         currentRenderTask.promise.then(() => {
@@ -32,6 +34,16 @@ function renderPage(pageNum: number): void {
             if (info) {
                 info.textContent = `Page ${currentPage} / ${totalPages}`;
             }
+
+            const zoomInfo = document.getElementById('zoomDefault');
+            if (zoomInfo) {
+                zoomInfo.textContent = `x ${zoom}`;
+            }
+
+            if (totalPages == 1) {
+                disableControls(true);
+            }
+
         }).catch((err: any) => {
             // Ne loggue que si l’erreur n’est pas due à une annulation
             if (err?.name !== 'RenderingCancelledException') {
@@ -58,7 +70,11 @@ function setupControls(): void {
 
     document.getElementById('zoomIn')?.addEventListener('click', () => {
         zoom += 0.25;
-    console.log(`Zoom level: ${zoom}`);
+        renderPage(currentPage);
+    });
+
+    document.getElementById('zoomDefault')?.addEventListener('click', () => {
+        zoom = 1.5;
         renderPage(currentPage);
     });
 
@@ -68,8 +84,19 @@ function setupControls(): void {
     });
 }
 
+function disableControls(disabled: boolean): void {
+    document.getElementById('prevPage')!.toggleAttribute('disabled', disabled);
+    document.getElementById('nextPage')!.toggleAttribute('disabled', disabled);
+}
+
 export function displayPdfBase64(base64Data: string): void {
     try {
+
+        if (pdfDoc) {
+            pdfDoc.destroy();
+            pdfDoc = null;
+        }
+
         const binary = atob(base64Data);
         const len = binary.length;
         const bytes = new Uint8Array(len);
