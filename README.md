@@ -1,9 +1,15 @@
 # Blazor-PDF-js
+![Alt text](https://mozilla.github.io/pdf.js/images/logo.svg "PDF.js")
 use Mozilla's PDJ.js library to display an existing PDF and add a few commands to avoid using iFrame
 
 DEMO : https://tossnet.github.io/Blazor-PDF-js/
 
-https://mozilla.github.io/pdf.js/images/logo.svg
+
+https://github.com/user-attachments/assets/4d77015d-9cc4-45e2-99c3-5e9131f980c9
+
+
+
+
 
 
 
