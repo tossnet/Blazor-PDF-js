@@ -12,7 +12,7 @@ public partial class Home : IAsyncDisposable
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        base.OnAfterRenderAsync(firstRender);
+        await base.OnAfterRenderAsync(firstRender);
 
         if (!firstRender)
         {
@@ -24,8 +24,13 @@ public partial class Home : IAsyncDisposable
 
     private async Task OnClickLoadPdf(string filename)
     {
+        if (JsModule is null)
+        {
+            throw new InvalidOperationException("JS module is not loaded.");
+        }
+
         var pdfBytes = await Http.GetByteArrayAsync(filename);
-        string base64 = Convert.ToBase64String(pdfBytes); 
+        string base64 = Convert.ToBase64String(pdfBytes);
 
         await JsModule.InvokeVoidAsync("displayPdfBase64", base64);
     }

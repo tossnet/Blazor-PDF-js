@@ -5,6 +5,11 @@ let zoom = 1.5;
 const canvasId = 'pdfCanvas';
 let currentRenderTask: any = null;
 
+let isDragging = false;
+let startX = 0;
+let startY = 0;
+let initialScrollLeft = 0;
+let initialScrollTop = 0;
 function renderPage(pageNum: number): void {
     const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
     const context = canvas?.getContext('2d');
@@ -84,6 +89,47 @@ function setupControls(): void {
     });
 }
 
+function setupDraggable(): void {
+    const container = document.getElementById('pdfContainer') as HTMLElement;
+    const canvas = document.getElementById('pdfCanvas') as HTMLCanvasElement;
+
+    canvas.addEventListener('mousedown', (e: MouseEvent) => {
+        isDragging = true;
+        canvas.style.cursor = 'grabbing';
+
+        // Position de la souris relative au container
+        startX = e.pageX - container.offsetLeft;
+        startY = e.pageY - container.offsetTop;
+
+        // Mémorise le scroll initial
+        initialScrollLeft = container.scrollLeft;
+        initialScrollTop = container.scrollTop;
+
+        // Empêche le texte ou l’image d’être sélectionné
+        e.preventDefault();
+    });
+
+    canvas.addEventListener('mousemove', (e: MouseEvent) => {
+        if (!isDragging) return;
+        e.preventDefault();
+
+        const x = e.pageX - container.offsetLeft;
+        const y = e.pageY - container.offsetTop;
+        const dx = x - startX;
+        const dy = y - startY;
+
+        container.scrollLeft = initialScrollLeft - dx;
+        container.scrollTop = initialScrollTop - dy;
+    });
+
+    ['mouseup', 'mouseleave'].forEach(evt => {
+        canvas.addEventListener(evt, () => {
+            isDragging = false;
+            canvas.style.cursor = 'grab';
+        });
+    });
+}
+
 function disableControls(disabled: boolean): void {
     document.getElementById('prevPage')!.toggleAttribute('disabled', disabled);
     document.getElementById('nextPage')!.toggleAttribute('disabled', disabled);
@@ -114,6 +160,7 @@ export function displayPdfBase64(base64Data: string): void {
 
             renderPage(currentPage);
             setupControls();
+            setupDraggable();
         });
     } catch (e) {
         console.error("Erreur lors du décodage base64 :", e);
