@@ -1,20 +1,5 @@
-﻿#pdfContainer {
+﻿#pdfControls {
     position: relative;
-    background-color: #ccc;
-    padding: 2rem;
-    max-height: 70vh;
-    overflow: auto;
-    border: 1px solid #aaaaaa17;
-    text-align: center;
-    box-sizing: border-box;
-    width: 100%;
-}
-
-#pdfControls {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
     background: #f0f0f0;
     padding: 8px;
     display: flex;
@@ -32,7 +17,18 @@
         color: #656565;
     }
 
+#pdfContainer {
+    position: relative;
+    background-color: #ccc;
+    padding: 2rem;
+    height: 70vh;
+    width: 100%;
+    overflow: auto;
+    border: 1px solid #aaaaaa17;
+    box-sizing: border-box;
+}
 #pdfCanvas {
+    position: absolute;
     background-color: white;
     border: 1px solid rgba(0, 0, 0, 0.3);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
