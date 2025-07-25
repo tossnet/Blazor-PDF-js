@@ -30,7 +30,7 @@ function renderPage(pageNum: number): void {
             currentRenderTask.cancel();
         }
 
-        disableControls(false);
+        disableControls(true);
 
         currentRenderTask = page.render(renderContext);
 
@@ -42,7 +42,7 @@ function renderPage(pageNum: number): void {
 
             const zoomInfo = document.getElementById('zoomDefault');
             if (zoomInfo) {
-                zoomInfo.textContent = `x ${zoom}`;
+                zoomInfo.textContent = `x ${zoom.toFixed(2)}`;
             }
 
             if (totalPages == 1) {
@@ -55,6 +55,8 @@ function renderPage(pageNum: number): void {
                 console.error("Erreur de rendu PDF :", err);
             }
         });
+
+        disableControls(false);
     });
 }
 
@@ -87,6 +89,27 @@ function setupControls(): void {
         zoom = Math.max(0.5, zoom - 0.25);
         renderPage(currentPage);
     });
+
+    document.getElementById('fullWidth')?.addEventListener('click', adjustCanvasToFullWidth);
+}
+
+function adjustCanvasToFullWidth(): void {
+    const container = document.getElementById('pdfContainer') as HTMLElement;
+    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+
+    if (!container || !canvas || !pdfDoc) return;
+
+    // Calcul de la largeur disponible en tenant compte du padding
+    const containerWidth = container.clientWidth - 2 * parseFloat(getComputedStyle(container).paddingLeft);
+
+
+    pdfDoc.getPage(currentPage).then((page: any) => {
+        const viewport = page.getViewport({ scale: 1 }); 
+        const scale = containerWidth / viewport.width;
+
+        zoom = scale; 
+        renderPage(currentPage); 
+    });
 }
 
 function setupDraggable(): void {
@@ -97,7 +120,6 @@ function setupDraggable(): void {
         isDragging = true;
         canvas.style.cursor = 'grabbing';
 
-        // Position de la souris relative au container
         startX = e.pageX - container.offsetLeft;
         startY = e.pageY - container.offsetTop;
 
@@ -105,7 +127,6 @@ function setupDraggable(): void {
         initialScrollLeft = container.scrollLeft;
         initialScrollTop = container.scrollTop;
 
-        // Empêche le texte ou l’image d’être sélectionné
         e.preventDefault();
     });
 
@@ -158,7 +179,9 @@ export function displayPdfBase64(base64Data: string): void {
             currentPage = 1;
             zoom = 1.5;
 
-            renderPage(currentPage);
+            // use this to define the initial zoom
+            adjustCanvasToFullWidth();
+
             setupControls();
             setupDraggable();
         });
