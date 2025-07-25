@@ -4,111 +4,165 @@ let totalPages = 0;
 let zoom = 1.5;
 const canvasId = 'pdfCanvas';
 let currentRenderTask: any = null;
+let isRendering = false;
 
 let isDragging = false;
 let startX = 0;
 let startY = 0;
 let initialScrollLeft = 0;
 let initialScrollTop = 0;
-function renderPage(pageNum: number): void {
-    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-    const context = canvas?.getContext('2d');
-    if (!canvas || !context || !pdfDoc) return;
-
-    pdfDoc.getPage(pageNum).then((page: any) => {
-        const viewport = page.getViewport({ scale: zoom });
-
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-
-        const renderContext = {
-            canvasContext: context,
-            viewport,
-        };
-
-        if (currentRenderTask) {
-            currentRenderTask.cancel();
+function renderPage(pageNum: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+        const context = canvas?.getContext('2d');
+        if (!canvas || !context || !pdfDoc) {
+            reject(new Error("Canvas or context not available"));
+            return;
         }
 
-        disableControls(true);
+        pdfDoc.getPage(pageNum).then((page: any) => {
+            const viewport = page.getViewport({ scale: zoom });
 
-        currentRenderTask = page.render(renderContext);
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
 
-        currentRenderTask.promise.then(() => {
-            const info = document.getElementById('pageInfo');
-            if (info) {
-                info.textContent = `Page ${currentPage} / ${totalPages}`;
+            const renderContext = {
+                canvasContext: context,
+                viewport,
+            };
+
+            if (currentRenderTask) {
+                currentRenderTask.cancel();
             }
 
-            const zoomInfo = document.getElementById('zoomDefault');
-            if (zoomInfo) {
-                zoomInfo.textContent = `x ${zoom.toFixed(2)}`;
-            }
+            disableControls(true);
 
-            if (totalPages == 1) {
-                disableControls(true);
-            }
+            currentRenderTask = page.render(renderContext);
 
-        }).catch((err: any) => {
-            // Ne loggue que si l’erreur n’est pas due à une annulation
-            if (err?.name !== 'RenderingCancelledException') {
-                console.error("Erreur de rendu PDF :", err);
-            }
-        });
+            currentRenderTask.promise.then(() => {
+                const info = document.getElementById('pageInfo');
+                if (info) {
+                    info.textContent = `Page ${currentPage} / ${totalPages}`;
+                }
 
-        disableControls(false);
+                const zoomInfo = document.getElementById('zoomDefault');
+                if (zoomInfo) {
+                    zoomInfo.textContent = `x ${zoom.toFixed(2)}`;
+                }
+
+                if (totalPages == 1) {
+                    disableControls(true);
+                }
+
+                disableControls(false);
+                resolve(); // Rendu terminé
+            }).catch((err: any) => {
+                if (err?.name !== 'RenderingCancelledException') {
+                    console.error("Error during renderPage :", err);
+                }
+                reject(err); // Rejette en cas d'erreur
+            });
+        }).catch(reject);
     });
 }
 
 function setupControls(): void {
     document.getElementById('prevPage')?.addEventListener('click', () => {
-        if (currentPage > 1) {
+        if (currentPage > 1 && !isRendering) {
             currentPage--;
-            renderPage(currentPage);
+            isRendering = true;
+            renderPage(currentPage).then(() => {
+                isRendering = false; // Rendu terminé
+            }).catch((err) => {
+                console.error("Error during prevPage :", err);
+                isRendering = false;
+            });
         }
     });
 
     document.getElementById('nextPage')?.addEventListener('click', () => {
-        if (currentPage < totalPages) {
+        if (currentPage < totalPages && !isRendering) {
             currentPage++;
-            renderPage(currentPage);
+            isRendering = true;
+            renderPage(currentPage).then(() => {
+                isRendering = false; // Rendu terminé
+            }).catch((err) => {
+                console.error("Error during nextPage :", err);
+                isRendering = false;
+            });
         }
     });
 
     document.getElementById('zoomIn')?.addEventListener('click', () => {
-        zoom += 0.25;
-        renderPage(currentPage);
+        if (!isRendering) {
+            zoom += 0.25;
+            isRendering = true;
+            renderPage(currentPage).then(() => {
+                isRendering = false; // Rendu terminé
+            }).catch((err) => {
+                console.error("Error during zoomIn :", err);
+                isRendering = false;
+            });
+        }
     });
 
     document.getElementById('zoomDefault')?.addEventListener('click', () => {
-        zoom = 1.5;
-        renderPage(currentPage);
+        if (!isRendering) {
+            zoom = 1.5;
+            isRendering = true;
+            renderPage(currentPage).then(() => {
+                isRendering = false;
+            }).catch((err) => {
+                console.error("Error during zoomDefault :", err);
+                isRendering = false;
+            });
+        }
     });
 
     document.getElementById('zoomOut')?.addEventListener('click', () => {
-        zoom = Math.max(0.5, zoom - 0.25);
-        renderPage(currentPage);
+        if (!isRendering) {
+            zoom = Math.max(0.5, zoom - 0.25);
+            isRendering = true;
+            renderPage(currentPage).then(() => {
+                isRendering = false;
+            }).catch((err) => {
+                console.error("Error during zoomOut :", err);
+                isRendering = false;
+            });
+        }
     });
 
     document.getElementById('fullWidth')?.addEventListener('click', adjustCanvasToFullWidth);
 }
 
 function adjustCanvasToFullWidth(): void {
+    if (isRendering) return;
+
     const container = document.getElementById('pdfContainer') as HTMLElement;
     const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
 
     if (!container || !canvas || !pdfDoc) return;
+
+    isRendering = true;
 
     // Calcul de la largeur disponible en tenant compte du padding
     const containerWidth = container.clientWidth - 2 * parseFloat(getComputedStyle(container).paddingLeft);
 
 
     pdfDoc.getPage(currentPage).then((page: any) => {
-        const viewport = page.getViewport({ scale: 1 }); 
+        const viewport = page.getViewport({ scale: 1 });
         const scale = containerWidth / viewport.width;
 
-        zoom = scale; 
-        renderPage(currentPage); 
+        zoom = scale;
+        renderPage(currentPage).then(() => {
+            isRendering = false;
+        }).catch((err) => {
+            console.error("Error during adjustCanvasToFullWidth :", err);
+            isRendering = false;
+        });
+    }).catch((err: unknown) => {
+        console.error("Error retrieving page :", err);
+        isRendering = false;
     });
 }
 
@@ -186,6 +240,6 @@ export function displayPdfBase64(base64Data: string): void {
             setupDraggable();
         });
     } catch (e) {
-        console.error("Erreur lors du décodage base64 :", e);
+        console.error("Error during decoding base64 :", e);
     }
 }
