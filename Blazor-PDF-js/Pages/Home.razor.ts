@@ -133,6 +133,7 @@ function setupControls(): void {
     });
 
     document.getElementById('fullWidth')?.addEventListener('click', adjustCanvasToFullWidth);
+    document.getElementById('fullHeight')?.addEventListener('click', adjustCanvasToFullHeight);
 }
 
 function adjustCanvasToFullWidth(): void {
@@ -158,6 +159,36 @@ function adjustCanvasToFullWidth(): void {
             isRendering = false;
         }).catch((err) => {
             console.error("Error during adjustCanvasToFullWidth :", err);
+            isRendering = false;
+        });
+    }).catch((err: unknown) => {
+        console.error("Error retrieving page :", err);
+        isRendering = false;
+    });
+}
+
+function adjustCanvasToFullHeight(): void {
+    if (isRendering) return;
+
+    const container = document.getElementById('pdfContainer') as HTMLElement;
+    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+
+    if (!container || !canvas || !pdfDoc) return;
+
+    isRendering = true;
+
+    // Calcul de la hauteur disponible en tenant compte du padding
+    const containerHeight = container.clientHeight - 2 * parseFloat(getComputedStyle(container).paddingTop);
+
+    pdfDoc.getPage(currentPage).then((page: any) => {
+        const viewport = page.getViewport({ scale: 1 });
+        const scale = containerHeight / viewport.height;
+
+        zoom = scale;
+        renderPage(currentPage).then(() => {
+            isRendering = false;
+        }).catch((err) => {
+            console.error("Error during adjustCanvasToFullHeight :", err);
             isRendering = false;
         });
     }).catch((err: unknown) => {
