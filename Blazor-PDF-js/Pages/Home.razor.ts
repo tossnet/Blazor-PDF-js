@@ -11,6 +11,8 @@ let startX = 0;
 let startY = 0;
 let initialScrollLeft = 0;
 let initialScrollTop = 0;
+let lastUserAction: 'fullWidth' | 'fullHeight' | 'zoom' | null = null;
+
 function renderPage(pageNum: number): Promise<void> {
     return new Promise((resolve, reject) => {
         const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -96,6 +98,7 @@ function setupControls(): void {
     document.getElementById('zoomIn')?.addEventListener('click', () => {
         if (!isRendering) {
             zoom += 0.25;
+            lastUserAction = 'zoom';
             isRendering = true;
             renderPage(currentPage).then(() => {
                 isRendering = false; // Rendu terminé
@@ -109,6 +112,7 @@ function setupControls(): void {
     document.getElementById('zoomDefault')?.addEventListener('click', () => {
         if (!isRendering) {
             zoom = 1.5;
+            lastUserAction = 'zoom';
             isRendering = true;
             renderPage(currentPage).then(() => {
                 isRendering = false;
@@ -122,6 +126,7 @@ function setupControls(): void {
     document.getElementById('zoomOut')?.addEventListener('click', () => {
         if (!isRendering) {
             zoom = Math.max(0.5, zoom - 0.25);
+            lastUserAction = 'zoom';
             isRendering = true;
             renderPage(currentPage).then(() => {
                 isRendering = false;
@@ -132,8 +137,15 @@ function setupControls(): void {
         }
     });
 
-    document.getElementById('fullWidth')?.addEventListener('click', adjustCanvasToFullWidth);
-    document.getElementById('fullHeight')?.addEventListener('click', adjustCanvasToFullHeight);
+    document.getElementById('fullWidth')?.addEventListener('click', () => {
+        lastUserAction = 'fullWidth';
+        adjustCanvasToFullWidth();
+    });
+
+    document.getElementById('fullHeight')?.addEventListener('click', () => {
+        lastUserAction = 'fullHeight';
+        adjustCanvasToFullHeight();
+    });
 }
 
 function adjustCanvasToFullWidth(): void {
@@ -196,7 +208,6 @@ function adjustCanvasToFullHeight(): void {
         isRendering = false;
     });
 }
-
 function setupDraggable(): void {
     const container = document.getElementById('pdfContainer') as HTMLElement;
     const canvas = document.getElementById('pdfCanvas') as HTMLCanvasElement;
@@ -264,8 +275,15 @@ export function displayPdfBase64(base64Data: string): void {
             currentPage = 1;
             zoom = 1.5;
 
-            // use this to define the initial zoom
-            adjustCanvasToFullWidth();
+            if (lastUserAction === 'fullWidth') {
+                adjustCanvasToFullWidth();
+            } else if (lastUserAction === 'fullHeight') {
+                adjustCanvasToFullHeight();
+            } else if (lastUserAction === 'zoom') {
+                renderPage(currentPage);
+            } else {
+                adjustCanvasToFullWidth(); //by default
+            }
 
             setupControls();
             setupDraggable();
